@@ -1,0 +1,155 @@
+# Restaurant System - Comprehensive Flow Diagrams
+
+This document provides two distinct visualizations of the **Obito Ani Foodzz** system: the static database structure and the dynamic operational logic.
+
+---
+
+## 1. Master ER Flow Diagram
+*Visualizes the structural relationship between database entities.*
+
+```mermaid
+graph TD
+    %% Styling (Monochrome: Black & White)
+    classDef default fill:#fff,stroke:#000,stroke-width:2px,color:#000;
+    classDef core fill:#fff,stroke:#000,stroke-width:3px,color:#000;
+    classDef config fill:#fff,stroke:#000,stroke-width:1px,color:#000;
+    classDef trans fill:#fff,stroke:#000,stroke-width:2px,color:#000;
+
+    %% Entities
+    RES[Restaurants]:::config
+    ROLE[Roles]:::config
+    PERM[Permissions]:::config
+    USER[Users]:::core
+    CAT[Categories]:::config
+    MENU[Menu Items]:::core
+    ORD[Orders]:::trans
+    OITEM[Order Items]:::trans
+    NOTIF[Notifications]:::trans
+    FB[Feedback]:::trans
+    IRAT[Item Ratings]:::trans
+
+    %% Relationships
+    RES -->|1:N| CAT
+    RES -->|1:N| USER
+    RES -->|1:N| ORD
+    RES -->|1:N| FB
+    
+    ROLE -->|1:N| USER
+    ROLE ---|M:N| PERM
+    
+    CAT -->|1:N| MENU
+    MENU -->|1:N| OITEM
+    MENU -->|1:N| IRAT
+    
+    ORD -->|1:N| OITEM
+    ORD -->|1:1| FB
+    ORD -->|1:N| NOTIF
+    
+    FB -->|1:N| IRAT
+```
+
+---
+
+## 2. Conditional Lifecycle Flow
+*Visualizes logical decision paths (If/Else) and workflow states.*
+
+```mermaid
+graph TD
+    %% Styling (Monochrome: Black & White)
+    classDef start fill:#fff,stroke:#000,stroke-dasharray: 5 5,color:#000;
+    classDef process fill:#fff,stroke:#000,stroke-width:2px,color:#000;
+    classDef decision fill:#fff,stroke:#000,stroke-width:2px,color:#000;
+    classDef alert fill:#fff,stroke:#000,stroke-width:2px,color:#000;
+
+    START((Customer Browses)):::start --> CHECK_AVAIL{Is Item In Stock?}:::decision
+    
+    CHECK_AVAIL -->|No| REJECT[Show 'Out of Stock']:::process
+    CHECK_AVAIL -->|Yes| ADD[Add to Cart]:::process
+    
+    ADD --> PLACE{Place Order?}:::decision
+    PLACE -->|No| START
+    PLACE -->|Yes| CREATE_ORD[Generate Order Record]:::process
+    
+    CREATE_ORD --> KDS_VIEW{Chef View?}:::decision
+    KDS_VIEW -->|Pending| PREP[Chef Clicks 'Start Cooking']:::process
+    PREP -->|In Progress| READY[Chef Clicks 'Ready']:::process
+    
+    READY --> NOTIFY{Notify Staff?}:::decision
+    NOTIFY -->|Yes| STAFF_ALERT[Send Status Notification]:::alert
+    
+    STAFF_ALERT --> SERVED[Mark as Served]:::process
+    SERVED --> FB_CHECK{Customer Leave Feedback?}:::decision
+    
+    FB_CHECK -->|Yes| SAVE_FB[Update Feedback & Ratings]:::process
+    FB_CHECK -->|No| END((Flow Ends)):::start
+    SAVE_FB --> END
+```
+
+## 3. End-to-End User Lifecycle Flow
+*Traces the journey from Start User to End User with intermediate processes.*
+
+```mermaid
+graph TD
+    %% Styling
+    classDef role fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef process fill:#fff,stroke:#000,stroke-width:2px;
+    classDef decision fill:#fff,stroke:#000,stroke-width:2px;
+    classDef database fill:#eee,stroke:#000,stroke-width:2px;
+
+    subgraph Customer_Start_User [Start User: Customer]
+        START((Entry)) --> BROWSE[Browse Menu]
+        BROWSE --> ADD_CART[Add to Cart]
+        ADD_CART --> PLACE_ORDER[Place Order]
+    end
+
+    PLACE_ORDER --> SYS_VALIDATE{System Validate?}:::decision
+
+    subgraph Backend_System [Process: System]
+        SYS_VALIDATE -->|Fail| NOTIFY_CUST[Alert Customer]
+        SYS_VALIDATE -->|Success| SAVE_DB[(MySQL DB)]:::database
+        SAVE_DB --> GEN_NOTIF[Generate Notifications]
+    end
+
+    GEN_NOTIF --> CHEF_RECEIVE[Receive Order]
+
+    subgraph Staff_Operations [Process: Staff]
+        subgraph Kitchen [Chef]
+            CHEF_RECEIVE --> START_COOK[Start Cooking]
+            START_COOK --> MARK_READY[Mark as Ready]
+        end
+        
+        subgraph Service [Waiter]
+            MARK_READY --> PICKUP[Pick up Food]
+            PICKUP --> SERVE_TABLE[Serve to Table]
+        end
+    end
+
+    SERVE_TABLE --> CUST_EAT[Customer Receives Food]
+
+    subgraph Customer_End_User [End User: Customer]
+        CUST_EAT --> RATE_EXP{Rate Experience?}:::decision
+        RATE_EXP -->|Yes| SUBMIT_FB[Submit Feedback/Ratings]
+        RATE_EXP -->|No| EXIT((Exit))
+        SUBMIT_FB --> EXIT
+    end
+
+    subgraph Admin_End_User [End User: Admin]
+        SAVE_DB --> VIEW_STATS[View Revenue & Analytics]
+        SUBMIT_FB --> MODERATE[Respond to Feedback]
+    end
+
+    %% Legend
+    style Customer_Start_User fill:#fff,stroke:#333
+    style Backend_System fill:#fff,stroke:#333
+    style Staff_Operations fill:#fff,stroke:#333
+    style Customer_End_User fill:#fff,stroke:#333
+    style Admin_End_User fill:#fff,stroke:#333
+```
+
+## Shape Legend
+| Shape | Meaning |
+| :--- | :--- |
+| **Rectangle `[]`** | Process / Entity |
+| **Diamond `{}`** | Decision Point (If/Else) |
+| **Circle `(())`** | Start / End Point |
+| **Note** | This diagram uses a **Monochrome** (Black & White) theme for clean documentation. |

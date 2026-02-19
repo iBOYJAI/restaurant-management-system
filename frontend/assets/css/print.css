@@ -1,0 +1,182 @@
+/* ============================================
+   Print Styles for Kitchen Receipts & Bills
+   Offline-only, no external dependencies
+   ============================================ */
+
+@media print {
+
+    /* Hide everything except print content */
+    body * {
+        visibility: hidden;
+    }
+
+    #printArea,
+    #printArea * {
+        visibility: visible;
+    }
+
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    /* Remove page margins */
+    @page {
+        margin: 0.5cm;
+        size: 80mm auto;
+        /* Standard receipt printer width */
+    }
+
+    /* Receipt styling */
+    .receipt {
+        font-family: 'Courier New', monospace;
+        font-size: 12pt;
+        line-height: 1.4;
+        max-width: 80mm;
+        margin: 0 auto;
+    }
+
+    .receipt-header {
+        text-align: center;
+        border-bottom: 2px dashed #000;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    .receipt-header h2 {
+        margin: 0;
+        font-size: 18pt;
+        font-weight: bold;
+    }
+
+    .receipt-info {
+        margin: 10px 0;
+    }
+
+    .receipt-info div {
+        display: flex;
+        justify-content: space-between;
+        margin: 5px 0;
+    }
+
+    .receipt-items {
+        border-top: 1px dashed #000;
+        border-bottom: 1px dashed #000;
+        padding: 10px 0;
+        margin: 10px 0;
+    }
+
+    .receipt-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 5px 0;
+    }
+
+    .item-name {
+        flex: 1;
+    }
+
+    .item-qty {
+        width: 30px;
+        text-align: center;
+    }
+
+    .item-price {
+        width: 60px;
+        text-align: right;
+    }
+
+    .item-notes {
+        font-style: italic;
+        font-size: 10pt;
+        margin-left: 20px;
+        color: #666;
+    }
+
+    .receipt-total {
+        border-top: 2px solid #000;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 5px 0;
+        font-weight: bold;
+        font-size: 14pt;
+    }
+
+    .receipt-footer {
+        text-align: center;
+        margin-top: 20px;
+        border-top: 2px dashed #000;
+        padding-top: 10px;
+        font-size: 10pt;
+    }
+
+    /* Kitchen order styling */
+    .kitchen-order {
+        font-family: Arial, sans-serif;
+        font-size: 14pt;
+        font-weight: bold;
+    }
+
+    .kitchen-order-header {
+        border: 3px solid #000;
+        padding: 10px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .kitchen-table {
+        font-size: 24pt;
+        font-weight: bold;
+    }
+
+    .kitchen-items {
+        border: 2px solid #000;
+        padding: 10px;
+    }
+
+    .kitchen-item {
+        font-size: 16pt;
+        margin: 10px 0;
+        padding: 5px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .kitchen-qty {
+        display: inline-block;
+        width: 50px;
+        background: #000;
+        color: #fff;
+        text-align: center;
+        padding: 5px;
+        margin-right: 10px;
+    }
+
+    .kitchen-notes {
+        background: #ffeb3b;
+        padding: 5px;
+        margin-top: 5px;
+        font-size: 12pt;
+    }
+
+    /* No colors in print for better compatibility */
+    * {
+        color: #000 !important;
+        background: #fff !important;
+    }
+
+    .kitchen-notes {
+        border: 2px solid #000 !important;
+    }
+
+    .kitchen-qty {
+        background: #000 !important;
+        color: #fff !important;
+    }
+}

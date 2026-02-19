@@ -1,0 +1,17 @@
+# XAMPP/PHP common ignores
+/vendor/
+/node_modules/
+.env
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
+# Database files (if any local temp files)
+/database/*.sql_tmp
+
+# Uploads directory (optional, usually ignored to keep repo clean)
+/uploads/*
+!/uploads/.gitkeep
