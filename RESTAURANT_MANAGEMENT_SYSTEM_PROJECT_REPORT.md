@@ -824,62 +824,182 @@ By integrating a normalized MySQL database with a PHP backend and vanilla JavaSc
 
 **Appendix – A (Screen Formats)** — Page 23
 
-### Screenshots (Auto-Captured UI)
+### A.1 Common / Customer — Page List
 
-The following figures are taken from the running system using an automated Puppeteer script (`capture-screenshots.js`). Viewport images represent the visible browser window; full-page images capture the entire scrollable page.
+| No. | Page | File | Description |
+|-----|------|------|-------------|
+| 1 | Landing / Menu | index.php | Main customer view: category pills, search, menu grid, item modal, cart icon with count. |
+| 2 | Cart | cart.php | Review and place order; cart from LocalStorage; subtotal, tax (CGST/SGST), total, table number, Place Order. |
+| 3 | Order Confirmation | order-confirmation.php | Post-order summary: order number, table number, total, wait message, link to menu. |
+| 4 | Reviews / Feedback | reviews.php | Testimonials list and feedback form (name, email, rating, comments); admin replies shown. |
 
-- **Figure A.1** — Customer Landing / Menu (full page)  
-  ![Customer Landing / Menu — full page](screenshots/full/home.png)
+### A.2 Admin (frontend/admin/) — Page List
 
-- **Figure A.2** — Cart and Order Summary (full page)  
-  ![Cart and Order Summary — full page](screenshots/full/cart.png)
+| No. | Page | File | Description |
+|-----|------|------|-------------|
+| 5 | Login | login.php | Secure entry: username, password, submit; redirect to dashboard on success. |
+| 6 | Dashboard | dashboard.php | Overview: cards (pending orders, revenue, active items); status board; navigation to menu, orders, feedback. |
+| 7 | Category Management | category-management.php | CRUD categories: list, Add form, Edit/Delete per row. |
+| 8 | Menu Management | menu-management.php | CRUD menu items: list by category, Add/Edit form, Delete; image, is_available. |
+| 9 | Order History | order-history.php | View/update orders: table (order number, table, total, status, date); status dropdown; print receipt. |
+| 10 | Feedback Dashboard | feedback-dashboard.php | List of feedback; reply text box and submit; display admin response. |
 
-- **Figure A.3** — Order Confirmation (full page)  
-  ![Order Confirmation — full page](screenshots/full/order-confirmation.png)
+### A.3 Kitchen (frontend/kitchen/) — Page List
 
-- **Figure A.4** — Admin Dashboard (viewport)  
-  ![Admin Dashboard — viewport](screenshots/viewport/admin-dashboard.png)
+| No. | Page | File | Description |
+|-----|------|------|-------------|
+| 11 | Login | login.php | Kitchen staff entry; redirect to KDS dashboard. |
+| 12 | Kitchen Dashboard | dashboard.php | KDS: active orders (order number, table, items, time); color-coded cards; Start Cooking / Ready; auto-refresh (e.g. 30 s). |
 
-- **Figure A.5** — Admin Menu Management (viewport)  
-  ![Admin Menu Management — viewport](screenshots/viewport/admin-menu-management.png)
+### A.4 Waiter (frontend/waiter/) — Page List & Where Waiter Goes After Login
 
-- **Figure A.6** — Kitchen Dashboard (full page)  
-  ![Kitchen Dashboard — full page](screenshots/full/kitchen-dashboard.png)
+| No. | Page | File | Description |
+|-----|------|------|-------------|
+| 13 | Login | waiter/login.php or admin/login.php | Waiter sign-in. **Credentials:** username `waiter`, password `password`. |
+| 14 | Waiter Dashboard | waiter/dashboard.php | **Where waiter goes after login.** Table grid (occupied/active), order list per table, order status (placed → preparing → ready → served), mark served. |
 
-- **Figure A.7** — Waiter Dashboard (full page)  
-  ![Waiter Dashboard — full page](screenshots/full/waiter-dashboard.png)
+**Redirect after login (from admin login page):**
 
-### A.1 Common / Customer
+| Role | Redirect URL |
+|------|--------------|
+| Admin | admin/dashboard.php |
+| Manager | admin/dashboard.php |
+| **Waiter** | **waiter/dashboard.php** |
+| Chef | kitchen/dashboard.php |
 
-1. **Landing / Menu (index.php)** — Main customer view. Elements: category pills, search, menu grid with images and prices, item modal (details, add to cart), cart icon with count.
-2. **Cart (cart.php)** — Review and place order. Elements: list of items with quantity, notes, price; subtotal; tax (CGST/SGST); total; table number input; Place Order button. Cart loaded from LocalStorage.
-3. **Order Confirmation (order-confirmation.php)** — Post-order summary. Elements: order number, table number, total, message to wait for service. Link to return to menu.
-4. **Reviews / Feedback (reviews.php)** — Display testimonials and/or feedback form. Elements: list of feedback with ratings and admin replies; form for new feedback (name, email, rating, comments).
+If **Waiter does not log in** (invalid credentials) although other roles work: run once **http://localhost/restaurant/database/fix_waiter_password.php** to create or reset the waiter user and set password to `password`.
 
-### A.2 Admin (frontend/admin/)
+### A.5 Detailed Screen Element Tables
 
-5. **Login (login.php)** — Secure entry. Elements: username, password, submit. Redirect to dashboard on success.
-6. **Dashboard (dashboard.php)** — Overview. Elements: cards (pending orders, revenue, active items); status board or recent orders; navigation to menu, orders, feedback.
-7. **Category Management (category-management.php)** — CRUD categories. Elements: list, Add form, Edit/Delete per row.
-8. **Menu Management (menu-management.php)** — CRUD menu items. Elements: list by category, Add/Edit form (name, description, price, category, image, is_available), Delete.
-9. **Order History (order-history.php)** — View and update orders. Elements: table (order number, table, total, status, date); status dropdown or buttons; print receipt option.
-10. **Feedback Dashboard (feedback-dashboard.php)** — List of feedback (customer, rating, comments, order); reply text box and submit; display admin response.
+Each screen is listed with its UI elements in table form for implementation and testing reference.
 
-### A.3 Kitchen (frontend/kitchen/)
+#### 1. Landing / Menu (index.php)
 
-11. **Login (login.php)** — Kitchen staff entry. Redirect to KDS dashboard.
-12. **Kitchen Dashboard (dashboard.php)** — KDS. Elements: list/grid of active orders (order number, table, items, time); color-coded cards; buttons "Start Cooking" / "Ready"; auto-refresh (e.g., every 30 s).
+| Area | Description |
+|------|-------------|
+| Header | System logo/name |
+| Filters | Category pills (all + per category) |
+| Search | Search box (filter menu by name/description) |
+| Menu | Grid of cards: image, name, price, Quick Add button |
+| Modal | Item details (name, description, price), quantity, notes, Add to Cart |
+| Navigation | Cart icon with badge (item count) |
+| Footer | Footer content/links |
 
-### A.4 Detailed Screen Element Tables
+![Landing / Menu Page](screenshots/full/home.png)
 
-- **Landing Page (index.php)**: System logo/name (header); Category pills; Search box; Menu grid (cards: image, name, price, Quick Add); Item modal; Cart icon with badge; Footer.
-- **Cart Page (cart.php)**: Cart table (Item name, Quantity +/-, Unit price, Line total, Notes, Remove); Subtotal; Tax (CGST/SGST); Grand total; Table number input; Place Order button.
-- **Order Confirmation**: Success message; Order number; Table number; Total; Message to wait for service; Link to menu.
-- **Admin Dashboard**: Sidebar (Menu, Categories, Orders, Feedback, Reports, Logout); Cards (Pending Orders, Revenue, Active Items); Status board; Quick links.
-- **Menu Management**: List (ID, Name, Category, Price, Availability toggle, Image, Edit, Delete); Add New; Form (Name, Description, Category, Price, Image, Is Available).
-- **Order History**: Filters (date, status); Orders table (Order number, Table, Total, Status dropdown, Date, View, Print).
-- **Kitchen Dashboard**: Header; Order cards (Order number, Table, Items, Time, Buttons Start Cooking / Ready); Color coding; Auto-refresh every 30 s.
-- **Feedback Dashboard**: List (Customer, Order ID, Rating, Comments, Admin response); Reply text area and Submit.
+#### 2. Cart (cart.php)
+
+| Area | Description |
+|------|-------------|
+| Cart table | Columns: Item name, Quantity (+/-), Unit price, Line total, Notes, Remove |
+| Summary | Subtotal; Tax (CGST/SGST); Grand total |
+| Input | Table number input |
+| Action | Place Order button |
+| Data | Cart loaded from LocalStorage |
+
+![Cart Page](screenshots/full/cart.png)
+
+#### 3. Order Confirmation (order-confirmation.php)
+
+| Area | Description |
+|------|-------------|
+| Message | Success message |
+| Summary | Order number, Table number, Total |
+| Instruction | Message to wait for service |
+| Navigation | Link to menu |
+
+![Order Confirmation Page](screenshots/full/order-confirmation.png)
+
+#### 4. Reviews / Feedback (reviews.php)
+
+| Area | Description |
+|------|-------------|
+| List | Feedback items: customer name, rating, comments, admin reply (if any) |
+| Form | New feedback: Name, Email, Rating (e.g. 1–5), Comments |
+| Action | Submit button |
+
+![Reviews / Feedback Page](screenshots/full/reviews.png)
+
+#### 5. Admin Login (frontend/admin/login.php)
+
+| Area | Description |
+|------|-------------|
+| Form | Username field, Password field |
+| Action | Submit (Login) button |
+| Behaviour | Redirect to dashboard on success; error message on failure |
+
+![Admin Login Page](screenshots/full/admin-login.png)
+
+#### 6. Admin Dashboard (frontend/admin/dashboard.php)
+
+| Area | Description |
+|------|-------------|
+| Sidebar | Menu, Categories, Orders, Feedback, Reports, Logout |
+| Cards | Pending Orders count, Revenue, Active Items count |
+| Content | Status board or recent orders list |
+| Navigation | Quick links to menu, orders, feedback |
+
+![Admin Dashboard Page](screenshots/full/admin-dashboard.png)
+
+#### 7. Category Management (frontend/admin/category-management.php)
+
+| Area | Description |
+|------|-------------|
+| List | Table/list: Category name, Edit, Delete per row |
+| Add | Add form: Category name, Submit |
+| Row actions | Edit (inline or modal), Delete (with confirm) |
+
+![Category Management Page](screenshots/full/admin-category-management.png)
+
+#### 8. Menu Management (frontend/admin/menu-management.php)
+
+| Area | Description |
+|------|-------------|
+| List | ID, Name, Category, Price, Availability toggle, Image thumbnail, Edit, Delete |
+| Add | “Add New” button |
+| Form | Name, Description, Category (dropdown), Price, Image upload, Is Available (checkbox) |
+| Row actions | Edit, Delete |
+
+![Menu Management Page](screenshots/full/admin-menu-management.png)
+
+#### 9. Order History (frontend/admin/order-history.php)
+
+| Area | Description |
+|------|-------------|
+| Filters | Date range, Status filter |
+| Table | Order number, Table, Total, Status dropdown, Date, View, Print |
+| Actions | Update status; Print receipt |
+
+![Order History Page](screenshots/full/admin-order-history.png)
+
+#### 10. Feedback Dashboard (frontend/admin/feedback-dashboard.php)
+
+| Area | Description |
+|------|-------------|
+| List | Customer, Order ID, Rating, Comments, Admin response (if any) |
+| Reply | Reply text area, Submit per feedback item |
+
+![Feedback Dashboard Page](screenshots/full/admin-feedback-dashboard.png)
+
+#### 11. Kitchen Login (frontend/kitchen/login.php)
+
+| Area | Description |
+|------|-------------|
+| Form | Username, Password |
+| Action | Submit; redirect to Kitchen Dashboard on success |
+
+![Kitchen Login Page](screenshots/full/kitchen-login.png)
+
+#### 12. Kitchen Dashboard (frontend/kitchen/dashboard.php)
+
+| Area | Description |
+|------|-------------|
+| Header | Title / navigation |
+| Orders | Cards: Order number, Table, Items list, Time; color-coded by status |
+| Actions | “Start Cooking”, “Ready” (or equivalent) per order |
+| Refresh | Auto-refresh every 30 s (or configurable) |
+
+![Kitchen Dashboard Page](screenshots/full/kitchen-dashboard.png)
 
 ---
 

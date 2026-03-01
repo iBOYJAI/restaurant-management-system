@@ -33,27 +33,35 @@ function login($username, $password)
     $stmt->execute([$username]);
     $user = $stmt->fetch();
 
-    if ($user && verifyPassword($password, $user['password_hash'])) {
-        // Update last login
-        $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
-        $updateStmt->execute([$user['id']]);
-
-        // Get role info
-        $roleStmt = $pdo->prepare("SELECT name FROM roles WHERE id = ?");
-        $roleStmt->execute([$user['role_id']]);
-        $role = $roleStmt->fetch();
-
-        // Set session
-        $_SESSION['admin_logged_in'] = true;
-        $_SESSION['admin_id'] = $user['id'];
-        $_SESSION['admin_username'] = $user['username'];
-        $_SESSION['admin_name'] = $user['full_name'];
-        $_SESSION['admin_role'] = $role['name'] ?? 'admin';
-
-        return $user;
+    if (!$user) {
+        return false;
+    }
+    if (isset($user['is_active']) && (int)$user['is_active'] !== 1) {
+        return false;
+    }
+    if (!verifyPassword($password, $user['password_hash'])) {
+        return false;
     }
 
-    return false;
+    // Update last login
+    $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+    $updateStmt->execute([$user['id']]);
+
+    // Get role info
+    $roleStmt = $pdo->prepare("SELECT name FROM roles WHERE id = ?");
+    $roleStmt->execute([$user['role_id']]);
+    $role = $roleStmt->fetch();
+
+    // Set session
+    $_SESSION['admin_logged_in'] = true;
+    $_SESSION['admin_id'] = $user['id'];
+    $_SESSION['admin_username'] = $user['username'];
+    $_SESSION['admin_name'] = $user['full_name'];
+    $_SESSION['admin_role'] = $role['name'] ?? 'admin';
+
+    session_write_close();
+    session_start();
+    return $user;
 }
 
 /**
@@ -100,7 +108,9 @@ function hasAnyRole($allowedRoles)
 {
     if (!isLoggedIn()) return false;
     if (!isset($_SESSION['admin_role'])) return false;
-    return in_array($_SESSION['admin_role'], $allowedRoles);
+    $role = strtolower((string) $_SESSION['admin_role']);
+    $allowed = array_map('strtolower', (array) $allowedRoles);
+    return in_array($role, $allowed);
 }
 
 /**
@@ -108,11 +118,14 @@ function hasAnyRole($allowedRoles)
  */
 function redirectByRole()
 {
-    $role = $_SESSION['admin_role'] ?? '';
+    $role = strtolower((string) ($_SESSION['admin_role'] ?? ''));
     switch ($role) {
         case 'chef':
         case 'kitchen_staff':
             header('Location: /restaurant/frontend/kitchen/dashboard.php');
+            break;
+        case 'waiter':
+            header('Location: /restaurant/frontend/waiter/dashboard.php');
             break;
         case 'manager':
         case 'admin':
@@ -161,24 +174,46 @@ function getCurrentAdmin()
         return null;
     }
 
-    // Fetch full user data with role
-    $stmt = $pdo->prepare("
-        SELECT u.*, r.name as role_name, r.display_name as role_display, r.level as role_level,
-               rest.name as restaurant_name, rest.slug as restaurant_slug
-        FROM users u
-        LEFT JOIN roles r ON u.role_id = r.id
-        LEFT JOIN restaurants rest ON u.restaurant_id = rest.id
-        WHERE u.id = ?
-    ");
-    $stmt->execute([$_SESSION['admin_id']]);
-    $user = $stmt->fetch();
+    try {
+        if (!isset($pdo) || !$pdo) {
+            error_log('getCurrentAdmin: $pdo not available');
+            return null;
+        }
 
-    if (!$user) {
-        logout();
+        // Fetch full user data with role (restaurants join optional for single-tenant)
+        $stmt = $pdo->prepare("
+            SELECT u.*, r.name as role_name, r.display_name as role_display, r.level as role_level,
+                   rest.name as restaurant_name, rest.slug as restaurant_slug
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            LEFT JOIN restaurants rest ON u.restaurant_id = rest.id
+            WHERE u.id = ?
+        ");
+        $stmt->execute([$_SESSION['admin_id']]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            logout();
+            return null;
+        }
+
+        return $user;
+    } catch (Throwable $e) {
+        // Fallback: try users-only query in case roles/restaurants tables differ
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['admin_id']]);
+            $user = $stmt->fetch();
+            if ($user) {
+                $user['role_name'] = $user['role_display'] = $user['restaurant_name'] = $user['restaurant_slug'] = null;
+                return $user;
+            }
+        } catch (Throwable $e2) {
+            error_log('getCurrentAdmin fallback: ' . $e2->getMessage());
+        }
+        error_log('getCurrentAdmin: ' . $e->getMessage());
         return null;
     }
-
-    return $user;
 }
 
 /**

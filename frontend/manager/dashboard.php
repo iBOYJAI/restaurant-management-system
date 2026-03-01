@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../backend/config/config.php';
 require_once __DIR__ . '/../../backend/includes/auth.php';
 requireAuth();
-requireRole(['manager', 'admin', 'super_admin']);
+requireAnyRole(['manager', 'admin', 'super_admin']);
 $user = getCurrentAdmin();
 ?>
 <!DOCTYPE html>

@@ -7,8 +7,9 @@ ini_set('log_errors', 1);
  * Application Configuration
  */
 
-// Start session
+// Session cookie must be sent for all paths (avoids redirect loop on waiter/dashboard etc.)
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params(0, '/');
     session_start();
 }
 

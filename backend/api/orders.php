@@ -30,17 +30,27 @@ try {
             $status = isset($_GET['status']) ? sanitizeInput($_GET['status']) : null;
             $period = isset($_GET['period']) ? sanitizeInput($_GET['period']) : null; // today | yesterday | last_week
 
-            $sql = "SELECT 
+            $sql = "SELECT
                         o.*,
                         COUNT(oi.id) as item_count
                     FROM orders o
                     LEFT JOIN order_items oi ON o.id = oi.order_id";
             $where = [];
-            $params = [];
+            $params = []; // positional params only
 
             if ($status) {
-                $where[] = "o.status = :status";
-                $params[':status'] = $status;
+                // Support comma-separated statuses e.g. status=placed,preparing,ready
+                $statuses = array_values(array_filter(array_map('trim', explode(',', $status))));
+                if (count($statuses) === 1) {
+                    $where[] = "o.status = ?";
+                    $params[] = $statuses[0];
+                } elseif (count($statuses) > 1) {
+                    $placeholders = implode(',', array_fill(0, count($statuses), '?'));
+                    $where[] = "o.status IN ($placeholders)";
+                    foreach ($statuses as $s) {
+                        $params[] = $s;
+                    }
+                }
             }
             if ($period === 'today') {
                 $where[] = "DATE(o.created_at) = CURDATE()";
@@ -56,10 +66,7 @@ try {
             $sql .= " GROUP BY o.id ORDER BY o.created_at DESC";
 
             $stmt = $pdo->prepare($sql);
-            foreach ($params as $k => $v) {
-                $stmt->bindValue($k, $v, PDO::PARAM_STR);
-            }
-            $stmt->execute();
+            $stmt->execute($params);
             $orders = $stmt->fetchAll();
 
             // Fetch items for each order
@@ -175,6 +182,11 @@ try {
         case 'PUT':
             // Update order status
             $input = json_decode(file_get_contents('php://input'), true);
+
+            // Accept 'id' or 'order_id' for compatibility
+            if (isset($input['id']) && !isset($input['order_id'])) {
+                $input['order_id'] = $input['id'];
+            }
 
             $errors = validateRequired($input, ['order_id', 'status']);
             if (!empty($errors)) {

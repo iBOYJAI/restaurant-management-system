@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../backend/config/config.php';
 require_once __DIR__ . '/../../backend/includes/auth.php';
-requireAnyRole(['chef', 'kitchen_staff', 'admin', 'manager', 'super_admin']);
+requireAnyRole(['chef', 'kitchen_staff', 'waiter', 'admin', 'manager', 'super_admin']);
 ?>
 <!DOCTYPE html>
 <html lang="en">

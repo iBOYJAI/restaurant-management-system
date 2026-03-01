@@ -5,105 +5,47 @@ const puppeteer = require('puppeteer');
 
 // -------- CONFIGURE THESE --------
 
-// All main site and admin pages to capture
+// Role credentials (all use admin login form / login-handler). Logout between roles so each dashboard is captured with correct session.
+const ROLE_CREDENTIALS = {
+  admin:    { loginUrl: 'http://localhost/restaurant/frontend/admin/login.php', username: 'admin',    password: 'admin123' },
+  manager:  { loginUrl: 'http://localhost/restaurant/frontend/admin/login.php', username: 'manager',  password: 'password' },
+  waiter:   { loginUrl: 'http://localhost/restaurant/frontend/admin/login.php', username: 'waiter',   password: 'password' },
+  chef:     { loginUrl: 'http://localhost/restaurant/frontend/admin/login.php', username: 'chef',     password: 'password' },
+};
+const LOGOUT_URL = 'http://localhost/restaurant/frontend/admin/logout.php';
+
+// Pages to capture. auth: false = capture before login; auth: 'admin'|'manager'|'waiter'|'chef' = capture after logging in as that role.
 const PAGES = [
-  // Public/customer-facing pages
-  {
-    url: 'http://localhost/restaurant/frontend/index.php',
-    name: 'home',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/cart.php',
-    name: 'cart',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/order-confirmation.php',
-    name: 'order-confirmation',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/feedback.php',
-    name: 'feedback',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/reviews.php',
-    name: 'reviews',
-  },
+  // Public/customer-facing (capture before login)
+  { url: 'http://localhost/restaurant/frontend/index.php', name: 'home', auth: false },
+  { url: 'http://localhost/restaurant/frontend/cart.php', name: 'cart', auth: false },
+  { url: 'http://localhost/restaurant/frontend/order-confirmation.php', name: 'order-confirmation', auth: false },
+  { url: 'http://localhost/restaurant/frontend/feedback.php', name: 'feedback', auth: false },
+  { url: 'http://localhost/restaurant/frontend/reviews.php', name: 'reviews', auth: false },
 
-  // Admin login + dashboards
-  {
-    url: 'http://localhost/restaurant/frontend/admin/login.php',
-    name: 'admin-login',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/dashboard.php',
-    name: 'admin-dashboard',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/menu-management.php',
-    name: 'admin-menu-management',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/order-history.php',
-    name: 'admin-order-history',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/category-management.php',
-    name: 'admin-category-management',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/analytics.php',
-    name: 'admin-analytics',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/store-settings.php',
-    name: 'admin-store-settings',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/feedback-dashboard.php',
-    name: 'admin-feedback-dashboard',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/reports.php',
-    name: 'admin-reports',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/kitchen-dashboard.php',
-    name: 'admin-kitchen-dashboard',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/admin/logout.php',
-    name: 'admin-logout',
-  },
+  // Login pages (capture before login so form is visible)
+  { url: 'http://localhost/restaurant/frontend/admin/login.php', name: 'admin-login', auth: false },
+  { url: 'http://localhost/restaurant/frontend/kitchen/login.php', name: 'kitchen-login', auth: false },
+  { url: 'http://localhost/restaurant/frontend/waiter/login.php', name: 'waiter-login', auth: false },
 
-  // Other role dashboards & logins
-  {
-    url: 'http://localhost/restaurant/frontend/kitchen/login.php',
-    name: 'kitchen-login',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/kitchen/dashboard.php',
-    name: 'kitchen-dashboard',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/waiter/login.php',
-    name: 'waiter-login',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/waiter/dashboard.php',
-    name: 'waiter-dashboard',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/chef/dashboard.php',
-    name: 'chef-dashboard',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/manager/dashboard.php',
-    name: 'manager-dashboard',
-  },
-  {
-    url: 'http://localhost/restaurant/frontend/super-admin/restaurant-management.php',
-    name: 'super-admin-restaurant-management',
-  },
+  // Admin-only pages (capture after login as admin)
+  { url: 'http://localhost/restaurant/frontend/admin/dashboard.php', name: 'admin-dashboard', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/menu-management.php', name: 'admin-menu-management', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/order-history.php', name: 'admin-order-history', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/category-management.php', name: 'admin-category-management', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/analytics.php', name: 'admin-analytics', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/store-settings.php', name: 'admin-store-settings', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/feedback-dashboard.php', name: 'admin-feedback-dashboard', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/reports.php', name: 'admin-reports', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/kitchen-dashboard.php', name: 'admin-kitchen-dashboard', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/admin/logout.php', name: 'admin-logout', auth: 'admin' },
+  { url: 'http://localhost/restaurant/frontend/super-admin/restaurant-management.php', name: 'super-admin-restaurant-management', auth: 'admin' },
+
+  // Manager, waiter, chef: each captured after login as that role (logout before switching)
+  { url: 'http://localhost/restaurant/frontend/manager/dashboard.php', name: 'manager-dashboard', auth: 'manager' },
+  { url: 'http://localhost/restaurant/frontend/waiter/dashboard.php', name: 'waiter-dashboard', auth: 'waiter' },
+  { url: 'http://localhost/restaurant/frontend/kitchen/dashboard.php', name: 'kitchen-dashboard', auth: 'chef' },
+  { url: 'http://localhost/restaurant/frontend/chef/dashboard.php', name: 'chef-dashboard', auth: 'chef' },
 ];
 
 // No sections for now (keep empty)
@@ -132,22 +74,21 @@ async function ensureDir(dirPath) {
   await fs.promises.mkdir(dirPath, { recursive: true });
 }
 
-// Perform a one-time admin login so authenticated pages load correctly
-async function loginAsAdmin(page) {
-  const LOGIN_URL = 'http://localhost/restaurant/frontend/admin/login.php';
-  console.log('\nLogging in as admin at:', LOGIN_URL);
+// Log in as a specific role (admin, manager, waiter, chef). Uses shared admin login form.
+async function loginAsRole(page, role) {
+  const creds = ROLE_CREDENTIALS[role];
+  if (!creds) throw new Error(`Unknown role: ${role}`);
+  console.log(`\nLogging in as ${role} at:`, creds.loginUrl);
 
-  await page.goto(LOGIN_URL, {
+  await page.goto(creds.loginUrl, {
     waitUntil: 'networkidle2',
     timeout: 60000,
   });
 
-  // Fill in known demo credentials from the login page quick access buttons
   await page.waitForSelector('#username', { timeout: 10000 });
-  await page.type('#username', 'admin', { delay: 50 });
-  await page.type('#password', 'admin123', { delay: 50 });
+  await page.type('#username', creds.username, { delay: 50 });
+  await page.type('#password', creds.password, { delay: 50 });
 
-  // Submit the form and wait for navigation triggered by handleLogin()
   await Promise.all([
     page.click('button[type="submit"]'),
     page
@@ -156,11 +97,20 @@ async function loginAsAdmin(page) {
         timeout: 60000,
       })
       .catch(() => {
-        console.warn('Admin login navigation timeout; continuing anyway.');
+        console.warn(`${role} login navigation timeout; continuing anyway.`);
       }),
   ]);
 
-  console.log('Admin login attempt finished. Current URL:', page.url());
+  console.log(`${role} login finished. Current URL:`, page.url());
+}
+
+// Log out so the next role can log in with a clean session.
+async function logout(page) {
+  console.log('Logging out:', LOGOUT_URL);
+  await page.goto(LOGOUT_URL, {
+    waitUntil: 'networkidle2',
+    timeout: 15000,
+  });
 }
 
 // --------- MAIN SCRIPT ---------
@@ -179,63 +129,59 @@ async function loginAsAdmin(page) {
 
   const page = await browser.newPage();
 
-  // Log in once as admin so all protected pages are accessible
-  await loginAsAdmin(page);
-
-  for (const pageConfig of PAGES) {
+  async function capturePage(pageConfig) {
     const { url, name } = pageConfig;
     const pageSlug = slugify(name);
-
     console.log(`\nOpening page: ${url} (${pageSlug})`);
-    console.log(
-      'Saving screenshots to viewport/full folders with image name:',
-      pageSlug + '.png'
-    );
-
     await page.goto(url, {
       waitUntil: 'networkidle2',
       timeout: 60000,
     });
-
-    // Viewport screenshot (current window H & W)
     const viewportPath = path.join(VIEWPORT_DIR, `${pageSlug}.png`);
-    await page.screenshot({
-      path: viewportPath,
-      fullPage: false,
-    });
+    await page.screenshot({ path: viewportPath, fullPage: false });
     console.log('Viewport screenshot:', viewportPath);
-
-    // Full-page screenshot (complete page)
     const fullPagePath = path.join(FULL_DIR, `${pageSlug}.png`);
-    await page.screenshot({
-      path: fullPagePath,
-      fullPage: true,
-    });
+    await page.screenshot({ path: fullPagePath, fullPage: true });
     console.log('Full-page screenshot:', fullPagePath);
-
-    // Section screenshots (kept here in case you add later)
     const sections = PAGE_SECTIONS[pageSlug] || PAGE_SECTIONS[name] || [];
     for (const section of sections) {
       const sectionSlug = slugify(section.name);
-      const sectionPath = path.join(
-        BASE_OUTPUT_DIR,
-        'sections',
-        `${pageSlug}-${sectionSlug}.png`
-      );
-
+      const sectionPath = path.join(BASE_OUTPUT_DIR, 'sections', `${pageSlug}-${sectionSlug}.png`);
       await ensureDir(path.dirname(sectionPath));
-
       const element = await page.$(section.selector);
       if (!element) {
-        console.warn(
-          `  Section not found: ${section.name} (${section.selector})`
-        );
+        console.warn(`  Section not found: ${section.name} (${section.selector})`);
         continue;
       }
-
       await element.screenshot({ path: sectionPath });
       console.log('Section screenshot:', sectionPath);
     }
+  }
+
+  // Pass 1: Capture public and login pages (no auth) so login forms are visible
+  const noAuthPages = PAGES.filter((p) => p.auth === false);
+  console.log('\n--- Pass 1: Public & login pages (no auth) ---');
+  for (const pageConfig of noAuthPages) {
+    await capturePage(pageConfig);
+  }
+
+  // Pass 2: For each role, login → capture that role's pages → logout (so manager/waiter/chef get correct session)
+  const authPagesByRole = {};
+  for (const pageConfig of PAGES) {
+    if (pageConfig.auth && pageConfig.auth !== false) {
+      const role = pageConfig.auth;
+      if (!authPagesByRole[role]) authPagesByRole[role] = [];
+      authPagesByRole[role].push(pageConfig);
+    }
+  }
+
+  for (const [role, rolePages] of Object.entries(authPagesByRole)) {
+    console.log(`\n--- Pass 2: Login as ${role}, capture ${rolePages.length} page(s) ---`);
+    await loginAsRole(page, role);
+    for (const pageConfig of rolePages) {
+      await capturePage(pageConfig);
+    }
+    await logout(page);
   }
 
   await browser.close();

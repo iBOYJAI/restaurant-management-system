@@ -235,20 +235,24 @@
             try {
                 const response = await fetch('login-handler.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    const role = result.data ? result.data.role : '';
-                    if (role === 'chef' || role === 'kitchen_staff') {
-                        window.location.href = '../kitchen/dashboard.php';
-                    } else if (role === 'waiter') {
-                        window.location.href = '../waiter/dashboard.php';
-                    } else {
-                        window.location.href = 'dashboard.php';
-                    }
+                    const role = (result.data && result.data.role) ? String(result.data.role).toLowerCase() : '';
+                    const path = window.location.pathname;
+                    const base = path.replace(/\/admin\/?[^/]*$/, '') || '/restaurant/frontend';
+                    const target = role === 'chef' || role === 'kitchen_staff'
+                        ? base + '/kitchen/dashboard.php'
+                        : role === 'waiter'
+                            ? base + '/waiter/dashboard.php'
+                            : base + '/admin/dashboard.php';
+                    setTimeout(function () {
+                        window.location.href = target;
+                    }, 350);
                 } else {
                     errorDiv.textContent = result.message || 'Invalid credentials';
                     errorDiv.style.display = 'block';
