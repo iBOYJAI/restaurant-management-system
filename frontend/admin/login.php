@@ -172,18 +172,22 @@
             <!-- Quick Login Access -->
             <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
                 <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.25rem; color: rgba(255,255,255,0.4); text-align: center; font-weight: 700;">Quick Access (Demo)</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px;">
                     <button type="button" class="quick-login-badge" onclick="quickLogin('admin', 'admin123')">
                         <span class="badge-icon">👑</span>
                         <span class="badge-text">Admin</span>
                     </button>
-                    <button type="button" class="quick-login-badge" onclick="quickLogin('chef', 'password')">
-                        <span class="badge-icon">👨‍🍳</span>
-                        <span class="badge-text">Chef</span>
-                    </button>
                     <button type="button" class="quick-login-badge" onclick="quickLogin('manager', 'password')">
                         <span class="badge-icon">💼</span>
                         <span class="badge-text">Manager</span>
+                    </button>
+                    <button type="button" class="quick-login-badge" onclick="quickLogin('waiter', 'password')">
+                        <span class="badge-icon">🍽️</span>
+                        <span class="badge-text">Waiter</span>
+                    </button>
+                    <button type="button" class="quick-login-badge" onclick="quickLogin('chef', 'password')">
+                        <span class="badge-icon">👨‍🍳</span>
+                        <span class="badge-text">Chef</span>
                     </button>
                 </div>
             </div>
@@ -240,6 +244,8 @@
                     const role = result.data ? result.data.role : '';
                     if (role === 'chef' || role === 'kitchen_staff') {
                         window.location.href = '../kitchen/dashboard.php';
+                    } else if (role === 'waiter') {
+                        window.location.href = '../waiter/dashboard.php';
                     } else {
                         window.location.href = 'dashboard.php';
                     }

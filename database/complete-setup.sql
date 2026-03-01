@@ -232,7 +232,7 @@ ORDER BY hour;
 INSERT INTO restaurants (name, slug, address, phone, email, primary_color) VALUES
 ('Obito Ani Foodzz', 'obito-ani-foodzz', '45 Temple Street, Gobichettipalayam, TN 625001', '+91-9876543210', 'contact@obito-tn.com', '#E65100');
 
--- 2. Roles
+-- 2. Roles (waiter = frontend/waiter/dashboard.php, login: waiter/login.php or admin/login.php)
 INSERT INTO roles (name, display_name, level) VALUES
 ('super_admin', 'Super Administrator', 100),
 ('admin', 'Administrator', 90),
@@ -263,7 +263,7 @@ INSERT INTO role_permissions (role_id, permission_id) SELECT 3, id FROM permissi
 INSERT INTO role_permissions (role_id, permission_id) SELECT 4, id FROM permissions WHERE module IN ('orders', 'menu');
 INSERT INTO role_permissions (role_id, permission_id) SELECT 5, id FROM permissions WHERE name IN ('orders.view', 'orders.manage', 'menu.view');
 
--- 5. Users
+-- 5. Users (role_id 4=waiter; demo: admin/admin123, manager/waiter/chef use password 'password')
 INSERT INTO users (restaurant_id, role_id, username, password_hash, full_name, phone) VALUES
 (1, 1, 'admin', '$2y$10$lbaCGgkY5u1vW.sUou4yv.apwKqlwa9aXjnhCc3WX1B8lN9Ag7tp2', 'Restaurant Admin', '+91-9999999999'),
 (1, 3, 'manager', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Branch Manager', '+91-8888888888'),

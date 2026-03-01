@@ -85,6 +85,10 @@ const PAGES = [
     name: 'kitchen-dashboard',
   },
   {
+    url: 'http://localhost/restaurant/frontend/waiter/login.php',
+    name: 'waiter-login',
+  },
+  {
     url: 'http://localhost/restaurant/frontend/waiter/dashboard.php',
     name: 'waiter-dashboard',
   },
