@@ -26,27 +26,39 @@ try {
 
     switch ($method) {
         case 'GET':
-            // Fetch orders
+            // Fetch orders - filter by status and/or date period
             $status = isset($_GET['status']) ? sanitizeInput($_GET['status']) : null;
+            $period = isset($_GET['period']) ? sanitizeInput($_GET['period']) : null; // today | yesterday | last_week
 
             $sql = "SELECT 
                         o.*,
                         COUNT(oi.id) as item_count
                     FROM orders o
                     LEFT JOIN order_items oi ON o.id = oi.order_id";
+            $where = [];
+            $params = [];
 
             if ($status) {
-                $sql .= " WHERE o.status = :status";
+                $where[] = "o.status = :status";
+                $params[':status'] = $status;
+            }
+            if ($period === 'today') {
+                $where[] = "DATE(o.created_at) = CURDATE()";
+            } elseif ($period === 'yesterday') {
+                $where[] = "DATE(o.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+            } elseif ($period === 'last_week') {
+                $where[] = "o.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
             }
 
+            if (!empty($where)) {
+                $sql .= " WHERE " . implode(" AND ", $where);
+            }
             $sql .= " GROUP BY o.id ORDER BY o.created_at DESC";
 
             $stmt = $pdo->prepare($sql);
-
-            if ($status) {
-                $stmt->bindValue(':status', $status, PDO::PARAM_STR);
+            foreach ($params as $k => $v) {
+                $stmt->bindValue($k, $v, PDO::PARAM_STR);
             }
-
             $stmt->execute();
             $orders = $stmt->fetchAll();
 

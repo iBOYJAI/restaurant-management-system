@@ -332,16 +332,18 @@ require_once __DIR__ . '/../backend/includes/auth.php';
             emptyState.style.display = totalItems === 0 ? 'block' : 'none';
         }
 
+        function escapeAttr(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
         function createMenuItem(item) {
             const card = document.createElement('div');
             card.className = 'menu-item-card';
             card.onclick = () => openItemModal(item);
 
-            // Fix path for frontend
             const images = [item.image_url, item.image_url2, item.image_url3, item.image_url4, item.image_url5].filter(img => img);
-            let imageSrc = images.length > 0 ? '../' + images[0] : 'assets/images/placeholder.jpg';
+            let imageSrc = images.length > 0 ? (images[0].startsWith('assets/') ? images[0] : '../' + images[0]) : 'assets/images/placeholder.jpg';
 
-            // Get rating for this item
             const rating = itemRatings[item.id];
             const ratingHTML = rating ? `
                 <div style="display: flex; align-items: center; gap: 0.25rem; margin-top: 0.5rem; color: #ffd700;">
@@ -350,19 +352,24 @@ require_once __DIR__ . '/../backend/includes/auth.php';
                 </div>
             ` : '';
 
+            const thumbPath = (img) => img.startsWith('assets/') ? img : '../' + img;
             card.innerHTML = `
-                <img src="${imageSrc}" alt="${item.name}" onerror="this.src='assets/images/placeholder.jpg'">
+                <img src="${imageSrc}" alt="${escapeAttr(item.name)}" onerror="this.src='assets/images/placeholder.jpg'">
                 <div class="card-content">
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-description">${item.description || ''}</div>
+                    <div class="item-name">${escapeAttr(item.name)}</div>
+                    <div class="item-description">${escapeAttr(item.description || '')}</div>
                     ${ratingHTML}
                     <div class="item-price">${formatCurrency(item.price)}</div>
                     <div class="d-flex gap-1 mt-2 mb-2">
-                        ${images.slice(1).map(img => `<img src="../${img}" style="width: 30px; height: 30px; border-radius: 4px; border: 1px solid var(--border);">`).join('')}
+                        ${images.slice(1).map(img => `<img src="${thumbPath(img)}" style="width: 30px; height: 30px; border-radius: 4px; border: 1px solid var(--border);" onerror="this.style.display='none'">`).join('')}
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); quickAdd(${JSON.stringify(item).replace(/"/g, '&quot;')})">Quick Add</button>
+                    <button type="button" class="btn btn-primary btn-sm quick-add-btn">Quick Add</button>
                 </div>
             `;
+            card.querySelector('.quick-add-btn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                quickAdd(item);
+            });
 
             return card;
         }
@@ -375,9 +382,8 @@ require_once __DIR__ . '/../backend/includes/auth.php';
             document.getElementById('modalItemDescription').textContent = item.description || '';
             document.getElementById('modalItemPrice').textContent = formatCurrency(item.price);
             let modalImg = item.image_url || 'assets/images/placeholder.jpg';
-            if (modalImg.startsWith('uploads/')) {
-                modalImg = '../' + modalImg;
-            }
+            if (modalImg.startsWith('uploads/')) modalImg = '../' + modalImg;
+            else if (!modalImg.startsWith('assets/')) modalImg = '../' + modalImg;
             document.getElementById('modalItemImage').src = modalImg;
             document.getElementById('quantityDisplay').textContent = quantity;
             document.getElementById('itemNotes').value = '';

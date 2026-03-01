@@ -197,6 +197,15 @@ $admin = getCurrentAdmin();
 
             <div class="filter-vibre">
                 <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: #bbb; text-transform: uppercase;">By Day</label>
+                    <select id="periodFilter" class="form-control" onchange="loadOrders()" style="border-radius: 12px; border: 1px solid #eee; width: 180px; font-weight: 600;">
+                        <option value="">All time</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="last_week">Last 7 days</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
                     <label style="font-size: 0.7rem; font-weight: 800; color: #bbb; text-transform: uppercase;">By Status</label>
                     <select id="statusFilter" class="form-control" onchange="loadOrders()" style="border-radius: 12px; border: 1px solid #eee; width: 220px; font-weight: 600;">
                         <option value="">All Transactions</option>
@@ -244,7 +253,12 @@ $admin = getCurrentAdmin();
     <script>
         async function loadOrders() {
             const status = document.getElementById('statusFilter').value;
-            const url = status ? `/backend/api/orders.php?status=${status}` : '/backend/api/orders.php';
+            const period = document.getElementById('periodFilter').value;
+            let url = '/backend/api/orders.php';
+            const q = [];
+            if (status) q.push('status=' + encodeURIComponent(status));
+            if (period) q.push('period=' + encodeURIComponent(period));
+            if (q.length) url += '?' + q.join('&');
             const response = await apiRequest(url);
             if (response.success) displayOrders(response.data);
         }

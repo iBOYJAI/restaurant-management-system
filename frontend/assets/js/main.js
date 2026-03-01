@@ -25,7 +25,7 @@ const Cart = {
         const existingIndex = cart.findIndex(i => i.id === item.id && i.notes === notes);
 
         if (existingIndex > -1) {
-            cart[existingIndex].quantity = parseInt(cart[existingIndex].quantity);
+            cart[existingIndex].quantity = parseInt(cart[existingIndex].quantity, 10) + parseInt(quantity, 10);
         } else {
             cart.push({
                 id: item.id,

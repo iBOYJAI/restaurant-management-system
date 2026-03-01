@@ -337,12 +337,12 @@ $admin = getCurrentAdmin();
         function previewImage(i) {
             const input = document.getElementById(`imageInput${i}`);
             const slot = document.getElementById(`slot${i}`);
-            if (input.files && input.files[0]) {
+            if (input && input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => {
-                    slot.innerHTML = `<img src="${e.target.result}">`;
+                    slot.innerHTML = `<img src="${e.target.result}"><input type="file" id="imageInput${i}" hidden accept="image/*" onchange="previewImage(${i})">`;
                     slot.classList.add('has-image');
-                }
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }
@@ -353,9 +353,9 @@ $admin = getCurrentAdmin();
             document.getElementById('itemId').value = '';
             for (let i = 1; i <= 5; i++) {
                 const slot = document.getElementById(`slot${i}`);
-                slot.innerHTML = i === 1 ? '<span style="font-size: 1.5rem;">📸</span><span class="slot-label">COVER</span>' : `<span class="slot-label">IMG ${i}</span>`;
+                slot.innerHTML = (i === 1 ? '<span style="font-size: 1.5rem;">📸</span><span class="slot-label">COVER</span>' : `<span class="slot-label">IMG ${i}</span>`) +
+                    `<input type="file" id="imageInput${i}" hidden accept="image/*" onchange="previewImage(${i})">`;
                 slot.classList.remove('has-image');
-                slot.appendChild(document.createElement('input')).outerHTML = `<input type="file" id="imageInput${i}" hidden accept="image/*" onchange="previewImage(${i})">`;
             }
             openModal('itemModal');
         }
@@ -372,14 +372,14 @@ $admin = getCurrentAdmin();
             const images = [item.image_url, item.image_url2, item.image_url3, item.image_url4, item.image_url5];
             images.forEach((url, i) => {
                 const slot = document.getElementById(`slot${i+1}`);
+                const label = (i === 0) ? '<span style="font-size: 1.5rem;">📸</span><span class="slot-label">COVER</span>' : `<span class="slot-label">IMG ${i+1}</span>`;
                 if (url) {
-                    slot.innerHTML = `<img src="../../${url}">`;
+                    slot.innerHTML = `<img src="../../${url}">` + label + `<input type="file" id="imageInput${i+1}" hidden accept="image/*" onchange="previewImage(${i+1})">`;
                     slot.classList.add('has-image');
                 } else {
-                    slot.innerHTML = (i === 0) ? '<span style="font-size: 1.5rem;">📸</span><span class="slot-label">COVER</span>' : `<span class="slot-label">IMG ${i+1}</span>`;
+                    slot.innerHTML = label + `<input type="file" id="imageInput${i+1}" hidden accept="image/*" onchange="previewImage(${i+1})">`;
                     slot.classList.remove('has-image');
                 }
-                slot.appendChild(document.createElement('input')).outerHTML = `<input type="file" id="imageInput${i+1}" hidden accept="image/*" onchange="previewImage(${i+1})">`;
             });
             openModal('itemModal');
         }
@@ -397,8 +397,10 @@ $admin = getCurrentAdmin();
             if (id) formData.append('id', id);
 
             for (let i = 1; i <= 5; i++) {
-                const file = document.getElementById(`imageInput${i}`).files[0];
-                if (file) formData.append(i === 1 ? 'image' : `image${i}`, file);
+                const input = document.getElementById(`imageInput${i}`);
+                if (!input || !input.files || !input.files[0]) continue;
+                const file = input.files[0];
+                formData.append(i === 1 ? 'image' : `image${i}`, file);
             }
 
             try {

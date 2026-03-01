@@ -1,4 +1,15 @@
 <?php
+$storeName = 'Obito Ani Foodzz';
+try {
+    if (file_exists(__DIR__ . '/../../../backend/config/database.php')) {
+        require_once __DIR__ . '/../../../backend/config/database.php';
+        $r = $pdo->query("SELECT name FROM restaurants WHERE id = 1");
+        if ($r) {
+            $n = $r->fetchColumn();
+            if ($n) $storeName = $n;
+        }
+    }
+} catch (Exception $e) {}
 // Function to check if a link is active
 function isActive($path)
 {
@@ -14,7 +25,7 @@ function isActive($path)
 <aside class="sidebar">
     <div class="sidebar-brand">
         <img src="../assets/icons/lock.svg" alt="Admin" style="width: 24px; filter: invert(1);">
-        Admin Panel
+        <?= htmlspecialchars($storeName ?? 'Admin Panel') ?>
     </div>
     <ul class="sidebar-nav">
         <!-- Dashboard: Primarily for Management -->
@@ -42,6 +53,9 @@ function isActive($path)
             <li><a href="feedback-dashboard.php" class="<?= isActive('feedback-dashboard.php') ?>"><img src="../assets/icons/user.svg" alt=""> Feedback</a></li>
         <?php endif; ?>
 
+        <?php if (hasAnyRole(['admin', 'super_admin'])): ?>
+            <li><a href="store-settings.php" class="<?= isActive('store-settings.php') ?>"><img src="../assets/icons/menu.svg" alt=""> Store Settings</a></li>
+        <?php endif; ?>
         <li style="margin-top: auto; padding-top: var(--space-md); border-top: 1px solid var(--secondary);">
             <a href="logout.php" class="logout-link"><img src="../assets/icons/logout.svg" alt=""> Logout</a>
         </li>

@@ -7,12 +7,23 @@ if (!function_exists('isActive')) {
         return ($current === $path || ($path === 'index.php' && ($current === '' || $current === '/'))) ? 'active' : '';
     }
 }
+$storeName = 'Obito Ani Foodzz';
+try {
+    if (file_exists(__DIR__ . '/../../backend/config/database.php')) {
+        require_once __DIR__ . '/../../backend/config/database.php';
+        $r = $pdo->query("SELECT name FROM restaurants WHERE id = 1");
+        if ($r) {
+            $n = $r->fetchColumn();
+            if ($n) $storeName = $n;
+        }
+    }
+} catch (Exception $e) {}
 ?>
 <nav class="navbar">
     <div class="navbar-container">
         <a href="index.php" class="navbar-brand">
             <img src="assets/icons/orders.svg" alt="Logo">
-            <span>Obito Ani Foodzz</span>
+            <span><?= htmlspecialchars($storeName) ?></span>
         </a>
         <ul class="navbar-nav">
             <li><a href="index.php" class="<?= isActive('index.php') ?>">Menu</a></li>

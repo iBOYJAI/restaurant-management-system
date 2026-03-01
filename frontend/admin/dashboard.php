@@ -79,6 +79,24 @@ $admin = getCurrentAdmin();
             margin: 0;
             font-size: 1.125rem;
         }
+
+        .status-badges {
+            display: flex;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-md);
+        }
+        .status-badge-item {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-placed { background: #e0f2fe; color: #0369a1; }
+        .status-preparing { background: #fef3c7; color: #92400e; }
+        .status-ready { background: #d1fae5; color: #065f46; }
+        .status-served { background: #f3f4f6; color: #374151; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 
@@ -111,9 +129,18 @@ $admin = getCurrentAdmin();
                     <div class="stat-value" id="totalRevenue">...</div>
                 </div>
                 <div class="stat-card">
-                    <h4>Today's Activity</h4>
+                    <h4>Today's Orders</h4>
                     <div class="stat-value" id="todayOrders">...</div>
                 </div>
+            </div>
+
+            <!-- Order status breakdown -->
+            <div class="status-badges" id="statusBreakdown" style="display: none;">
+                <span class="status-badge-item status-placed">Placed: <strong id="countPlaced">0</strong></span>
+                <span class="status-badge-item status-preparing">Preparing: <strong id="countPreparing">0</strong></span>
+                <span class="status-badge-item status-ready">Ready: <strong id="countReady">0</strong></span>
+                <span class="status-badge-item status-served">Served: <strong id="countServed">0</strong></span>
+                <span class="status-badge-item status-cancelled">Cancelled: <strong id="countCancelled">0</strong></span>
             </div>
 
             <!-- Quick Actions: Roles restricted here too -->
@@ -166,11 +193,19 @@ $admin = getCurrentAdmin();
                 const response = await apiRequest('/backend/api/admin/statistics.php');
                 if (response.success) {
                     const data = response.data;
-                    document.getElementById('totalOrders').textContent = data.total_orders;
-                    document.getElementById('totalRevenue').textContent = formatCurrency(data.total_revenue);
-                    document.getElementById('todayOrders').textContent = data.recent_orders.length;
+                    document.getElementById('totalOrders').textContent = data.total_orders ?? 0;
+                    document.getElementById('totalRevenue').textContent = formatCurrency(data.total_revenue ?? 0);
+                    document.getElementById('todayOrders').textContent = data.today_orders ?? (data.recent_orders ? data.recent_orders.length : 0);
 
-                    displayRecentOrders(data.recent_orders);
+                    const byStatus = data.by_status || {};
+                    document.getElementById('countPlaced').textContent = byStatus.placed || 0;
+                    document.getElementById('countPreparing').textContent = byStatus.preparing || 0;
+                    document.getElementById('countReady').textContent = byStatus.ready || 0;
+                    document.getElementById('countServed').textContent = byStatus.served || 0;
+                    document.getElementById('countCancelled').textContent = byStatus.cancelled || 0;
+                    document.getElementById('statusBreakdown').style.display = 'flex';
+
+                    displayRecentOrders(data.recent_orders || []);
                 }
             } catch (error) {
                 console.error('Dashboard Load Error:', error);
@@ -188,7 +223,7 @@ $admin = getCurrentAdmin();
                 <tr style="border-bottom: 1px solid var(--border);">
                     <td style="padding: 1rem var(--space-md); font-family: monospace; font-weight: 700;">#${order.order_number}</td>
                     <td style="padding: 1rem var(--space-md);">Table ${order.table_number}</td>
-                    <td style="padding: 1rem var(--space-md);"><span class="badge status-${order.status}">${order.status}</span></td>
+                    <td style="padding: 1rem var(--space-md);"><span class="status-badge-item status-${order.status}">${order.status}</span></td>
                     <td style="padding: 1rem var(--space-md); font-weight: 700;">${formatCurrency(order.total_amount)}</td>
                     <td style="padding: 1rem var(--space-md); color: var(--text-secondary); font-size: 0.85rem;">${formatDate(order.created_at)}</td>
                 </tr>

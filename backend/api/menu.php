@@ -28,6 +28,10 @@ try {
                 mi.description,
                 mi.price,
                 mi.image_url,
+                mi.image_url2,
+                mi.image_url3,
+                mi.image_url4,
+                mi.image_url5,
                 mi.is_available
             FROM categories c
             LEFT JOIN menu_items mi ON c.id = mi.category_id
@@ -78,6 +82,10 @@ try {
                 'description' => $row['description'],
                 'price' => floatval($row['price']),
                 'image_url' => $row['image_url'],
+                'image_url2' => $row['image_url2'] ?? null,
+                'image_url3' => $row['image_url3'] ?? null,
+                'image_url4' => $row['image_url4'] ?? null,
+                'image_url5' => $row['image_url5'] ?? null,
                 'is_available' => $row['is_available'] == 1
             ];
         }

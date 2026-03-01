@@ -127,15 +127,18 @@ try {
             break;
 
         case 'PUT':
-            // Parse JSON input
-            parse_str(file_get_contents('php://input'), $_PUT);
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!is_array($input)) {
+                parse_str(file_get_contents('php://input'), $input);
+            }
+            $input = $input ?? [];
 
-            $id = intval($_PUT['id'] ?? 0);
-            $name = sanitizeInput($_PUT['name'] ?? '');
-            $description = sanitizeInput($_PUT['description'] ?? '');
-            $price = floatval($_PUT['price'] ?? 0);
-            $categoryId = intval($_PUT['category_id'] ?? 0);
-            $isAvailable = isset($_PUT['is_available']) ? intval($_PUT['is_available']) : 1;
+            $id = intval($input['id'] ?? 0);
+            $name = sanitizeInput($input['name'] ?? '');
+            $description = sanitizeInput($input['description'] ?? '');
+            $price = floatval($input['price'] ?? 0);
+            $categoryId = intval($input['category_id'] ?? 0);
+            $isAvailable = isset($input['is_available']) ? intval($input['is_available']) : 1;
 
             if ($id <= 0 || empty($name) || $price <= 0 || $categoryId <= 0) {
                 jsonResponse(false, null, 'Invalid input', 400);
@@ -152,8 +155,11 @@ try {
             break;
 
         case 'DELETE':
-            parse_str(file_get_contents('php://input'), $_DELETE);
-            $id = intval($_DELETE['id'] ?? 0);
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!is_array($input)) {
+                parse_str(file_get_contents('php://input'), $input);
+            }
+            $id = intval($input['id'] ?? 0);
 
             if ($id <= 0) {
                 jsonResponse(false, null, 'Invalid ID', 400);
@@ -178,8 +184,11 @@ try {
 
         case 'PATCH':
             // Toggle availability
-            parse_str(file_get_contents('php://input'), $_PATCH);
-            $id = intval($_PATCH['id'] ?? 0);
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!is_array($input)) {
+                parse_str(file_get_contents('php://input'), $input);
+            }
+            $id = intval($input['id'] ?? 0);
 
             if ($id <= 0) {
                 jsonResponse(false, null, 'Invalid ID', 400);

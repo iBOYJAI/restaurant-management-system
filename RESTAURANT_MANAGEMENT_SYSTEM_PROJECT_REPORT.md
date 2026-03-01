@@ -697,6 +697,31 @@ BIBLIOGRAPHY
 
 APPENDIX A â€” SCREEN FORMATS (WEBPAGES)
 
+SCREENSHOTS (AUTO-CAPTURED UI)
+
+The following figures are taken directly from the running system using an automated Puppeteer script (`capture-screenshots.js`). Viewport images represent the visible browser window; full-page images capture the entire scrollable page.
+
+- **Figure A.1** â€” Customer Landing / Menu (full page)  
+  ![Customer Landing / Menu â€” full page](screenshots/full/home.png)
+
+- **Figure A.2** â€” Cart and Order Summary (full page)  
+  ![Cart and Order Summary â€” full page](screenshots/full/cart.png)
+
+- **Figure A.3** â€” Order Confirmation (full page)  
+  ![Order Confirmation â€” full page](screenshots/full/order-confirmation.png)
+
+- **Figure A.4** â€” Admin Dashboard (viewport)  
+  ![Admin Dashboard â€” viewport](screenshots/viewport/admin-dashboard.png)
+
+- **Figure A.5** â€” Admin Menu Management (viewport)  
+  ![Admin Menu Management â€” viewport](screenshots/viewport/admin-menu-management.png)
+
+- **Figure A.6** â€” Kitchen Dashboard (full page)  
+  ![Kitchen Dashboard â€” full page](screenshots/full/kitchen-dashboard.png)
+
+- **Figure A.7** â€” Waiter Dashboard (full page)  
+  ![Waiter Dashboard â€” full page](screenshots/full/waiter-dashboard.png)
+
 A.1 Common / Customer
 
 1. **Landing / Menu (index.php)** â€” Purpose: Main customer view. Elements: category pills, search, menu grid with images and prices, item modal (details, add to cart), cart icon with count. Design: Monochrome, grid layout.
